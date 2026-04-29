@@ -1,0 +1,373 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// ======================
+// USERS
+// ======================
+
+model User {
+  id        String   @id @default(uuid())
+  name      String
+  phone     String   @unique
+  email     String?  @unique
+  password  String
+  role      Role     @default(CLIENT)
+  createdAt DateTime @default(now())
+
+  // NEW
+  referralCode   String? @unique
+  referredByCode String?
+
+  paymentMethods PaymentMethod[]
+  vendor         Vendor?
+  orders         Order[]
+  cartItems      Cart[]
+  messagesSent   Message[] @relation("SenderMessages")
+  favorites      Favorite[]
+}
+
+// ======================
+// VENDORS
+// ======================
+
+model Vendor {
+  id     String @id @default(uuid())
+  userId String @unique
+  user   User   @relation(fields: [userId], references: [id])
+
+  type        VendorType
+  shopName    String? @unique
+  logo        String?
+  slogan      String?
+  description String?
+
+  whatsapp      String?
+  phoneBusiness String?
+
+  paymentMethod VendorPaymentType?
+  paymentNumber String?
+
+  bankName    String?
+  bankHolder  String?
+  bankAccount String?
+  bankIban    String?
+
+  status VendorStatus @default(PENDING)
+  badge  BadgeType    @default(SILVER)
+
+  isSuspended Boolean @default(false)
+  isVisible   Boolean @default(true)
+  isVerified  Boolean @default(false)
+
+  rating      Float   @default(0)
+  totalSales  Int     @default(0)
+  totalViews  Int     @default(0)
+
+  createdAt DateTime @default(now())
+
+  products      Product[]
+  subscription  Subscription?
+  payments      PaymentHistory[]
+  orders        Order[]
+  messages      Message[]
+}
+
+// ======================
+// PRODUCTS
+// ======================
+
+model Product {
+  id       String @id @default(uuid())
+  vendorId String
+  vendor   Vendor @relation(fields: [vendorId], references: [id])
+
+  name        String
+  description String?
+  price       Float
+  image       String?
+  stock       Int     @default(1)
+  isActive    Boolean @default(true)
+
+  // NEW BOOST DIRECT
+  isBoosted   Boolean  @default(false)
+  boostUntil  DateTime?
+
+  // NEW STATS
+  views       Int      @default(0)
+  soldCount   Int      @default(0)
+
+  createdAt DateTime @default(now())
+
+  boosts     Boost[]
+  orders     Order[]
+  cartItems  Cart[]
+  favorites  Favorite[]
+}
+
+// ======================
+// CART
+// ======================
+
+model Cart {
+  id String @id @default(uuid())
+
+  userId String
+  user   User   @relation(fields: [userId], references: [id])
+
+  productId String
+  product   Product @relation(fields: [productId], references: [id])
+
+  quantity Int @default(1)
+
+  createdAt DateTime @default(now())
+
+  @@unique([userId, productId])
+}
+
+// ======================
+// FAVORITES
+// ======================
+
+model Favorite {
+  id String @id @default(uuid())
+
+  userId String
+  user   User   @relation(fields: [userId], references: [id])
+
+  productId String
+  product   Product @relation(fields: [productId], references: [id])
+
+  createdAt DateTime @default(now())
+
+  @@unique([userId, productId])
+}
+
+// ======================
+// MESSAGES
+// ======================
+
+model Message {
+  id String @id @default(uuid())
+
+  senderId String
+  sender   User   @relation("SenderMessages", fields: [senderId], references: [id])
+
+  vendorId String
+  vendor   Vendor @relation(fields: [vendorId], references: [id])
+
+  text String
+
+  isRead Boolean @default(false)
+
+  createdAt DateTime @default(now())
+}
+
+// ======================
+// ORDERS
+// ======================
+
+model Order {
+  id String @id @default(uuid())
+
+  userId String
+  user   User   @relation(fields: [userId], references: [id])
+
+  vendorId String
+  vendor   Vendor @relation(fields: [vendorId], references: [id])
+
+  productId String
+  product   Product @relation(fields: [productId], references: [id])
+
+  quantity Int   @default(1)
+  total    Float
+
+  // NEW
+  commission Float @default(0)
+
+  paymentMode PaymentMode
+  status      OrderStatus @default(PENDING)
+
+  customerName  String?
+  customerPhone String?
+  address       String?
+
+  trackingCode String?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+// ======================
+// SUBSCRIPTIONS
+// ======================
+
+model Subscription {
+  id       String @id @default(uuid())
+  vendorId String @unique
+  vendor   Vendor @relation(fields: [vendorId], references: [id])
+
+  plan      PlanType
+  startedAt DateTime @default(now())
+  expiresAt DateTime
+
+  isActive  Boolean @default(true)
+  autoRenew Boolean @default(false)
+
+  billingCycle BillingCycle @default(MONTHLY)
+}
+
+// ======================
+// BOOSTS
+// ======================
+
+model Boost {
+  id String @id @default(uuid())
+
+  productId String
+  product   Product @relation(fields: [productId], references: [id])
+
+  type      BoostType
+  startedAt DateTime @default(now())
+  expiresAt DateTime
+  isActive  Boolean  @default(true)
+}
+
+// ======================
+// USER PAYMENT METHODS
+// ======================
+
+model PaymentMethod {
+  id String @id @default(uuid())
+
+  userId String
+  user   User   @relation(fields: [userId], references: [id])
+
+  method      PaymentType
+  accountName String?
+  accountRef  String
+
+  isDefault Boolean @default(false)
+
+  createdAt DateTime @default(now())
+}
+
+// ======================
+// PAYMENT HISTORY
+// ======================
+
+model PaymentHistory {
+  id String @id @default(uuid())
+
+  vendorId String
+  vendor   Vendor @relation(fields: [vendorId], references: [id])
+
+  plan         PlanType
+  billingCycle BillingCycle
+  amount       Float
+
+  method    PaymentType
+  reference String @unique
+
+  status PaymentStatus @default(SUCCESS)
+
+  createdAt DateTime @default(now())
+}
+
+model BoostPayment {
+  id          String   @id @default(cuid())
+  productId   String
+  vendorId    String
+  network     String
+  phone       String
+  amount      Float
+  reference   String   @unique
+  duration    Int
+  status      String   @default("PENDING")
+  createdAt   DateTime @default(now())
+}
+
+// ======================
+// ENUMS
+// ======================
+
+enum Role {
+  CLIENT
+  ADMIN
+}
+
+enum VendorType {
+  FORMAL
+  INFORMAL
+}
+
+enum VendorStatus {
+  PENDING
+  APPROVED
+  REJECTED
+}
+
+enum BadgeType {
+  GOLD
+  SILVER
+}
+
+enum PlanType {
+  STARTER
+  STANDARD
+  PRO
+}
+
+enum BoostType {
+  BASIC
+  FEATURED
+  PREMIUM
+}
+
+enum PaymentType {
+  MPESA
+  AIRTEL
+  ORANGE
+  VISA
+}
+
+enum VendorPaymentType {
+  MPESA
+  AIRTEL
+  ORANGE
+  VISA
+  BANK
+}
+
+enum BillingCycle {
+  MONTHLY
+  YEARLY
+}
+
+enum PaymentStatus {
+  SUCCESS
+  FAILED
+  PENDING
+}
+
+enum PaymentMode {
+  CASH_ON_DELIVERY
+  MOBILE_MONEY
+  CARD
+  EMPIRE_ESCROW
+}
+
+enum OrderStatus {
+  PENDING
+  CONFIRMED
+  PAID
+  SHIPPED
+  DELIVERED
+  CANCELLED
+  REFUNDED
+}
