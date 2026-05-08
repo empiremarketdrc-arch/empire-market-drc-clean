@@ -1,3 +1,4 @@
+import API_URL from "../config/api";
 import { useState, useEffect } from "react";
 
 export default function AdminDashboard() {
@@ -49,7 +50,7 @@ export default function AdminDashboard() {
 
       const payRes =
         await fetch(
-          "http://localhost:3000/api/payments/history",
+          `${API_URL}/api/auth/me`,
           {
             headers: {
               Authorization:
@@ -67,7 +68,7 @@ export default function AdminDashboard() {
 
       const vendorRes =
         await fetch(
-          "http://localhost:3000/api/admin/vendors",
+          `${API_URL}/api/auth/me`,
           {
             headers: {
               Authorization:
@@ -150,7 +151,7 @@ const topVendors =
 
       const res =
         await fetch(
-          `http://localhost:3000/api/admin/vendors/${id}`,
+          `${API_URL}/api/auth/me`,
           {
             method: "PATCH",
             headers: {
@@ -202,7 +203,7 @@ const deleteVendor =
 
       const res =
         await fetch(
-          `http://localhost:3000/api/admin/vendors/${id}`,
+          `${API_URL}/api/auth/me`,
           {
             method: "DELETE",
             headers: {

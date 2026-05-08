@@ -1,3 +1,4 @@
+import prisma from "./lib/prisma.js";
 import express from "express";
 import cors from "cors";
 import dotenv from "dotenv";
@@ -26,7 +27,10 @@ app.use(helmet());
 
 // CORS (CONFIGURÉ proprement)
 app.use(cors({
-  origin: "http://localhost:5173",
+  origin: [
+  "http://localhost:5173",
+  "https://empire-frontend-1q1m.onrender.com"
+],
   methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
   allowedHeaders: ["Content-Type", "Authorization"],
 }));
@@ -69,11 +73,15 @@ app.use((err, req, res, next) => {
     message: "Erreur serveur"
   });
 });
+ 
 
 /* ======================
    SERVER
 ====================== */
 
-app.listen(3000, () => {
-  console.log("Serveur lancé sur http://localhost:3000");
+
+const PORT = process.env.PORT || 5000;
+
+app.listen(PORT, () => {
+  console.log(`Serveur lancé sur le port ${PORT}`);
 });

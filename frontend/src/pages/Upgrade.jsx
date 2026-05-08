@@ -1,3 +1,4 @@
+import API_URL from "../config/api";
 import { useState } from "react";
 
 export default function Upgrade({ onSuccess }) {
@@ -30,7 +31,7 @@ export default function Upgrade({ onSuccess }) {
 
     try {
       const res = await fetch(
-        "http://localhost:3000/api/payment/checkout",
+        `${API_URL}/api/auth/me`,
         {
           method: "POST",
           headers: {

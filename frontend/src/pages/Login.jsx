@@ -1,4 +1,4 @@
-
+import API_URL from "../config/api";
 import { useState } from "react";
 
 export default function Login({ onLogin }) {
@@ -23,8 +23,8 @@ export default function Login({ onLogin }) {
       setLoading(true);
 
       const url = isRegister
-        ? "http://localhost:3000/api/auth/register"
-        : "http://localhost:3000/api/auth/login";
+        ? `${API_URL}/api/auth/me`
+        : `${API_URL}/api/auth/me`;
 
       const body = isRegister
         ? {

@@ -1,16 +1,20 @@
-export const isAdmin = (req, res, next) => {
-  try {
-    if (req.user.role !== "ADMIN") {
+export const authorize = (...roles) => {
+  return (req, res, next) => {
+
+    // 🔒 vérifier si protect a bien injecté req.user
+    if (!req.user) {
+      return res.status(401).json({
+        message: "Non authentifié"
+      });
+    }
+
+    // 🔒 vérifier si le rôle est autorisé
+    if (!roles.includes(req.user.role)) {
       return res.status(403).json({
-        message: "Accès refusé admin uniquement"
+        message: "Accès refusé"
       });
     }
 
     next();
-
-  } catch (error) {
-    res.status(500).json({
-      error: error.message
-    });
-  }
+  };
 };

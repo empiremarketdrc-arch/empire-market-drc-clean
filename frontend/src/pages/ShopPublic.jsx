@@ -1,10 +1,11 @@
+import API_URL from "../config/api";
 import { useEffect, useState } from "react";
 
 export default function ShopPublic({ shopName }) {
   const [shop, setShop] = useState(null);
 
   useEffect(() => {
-    fetch(`http://localhost:3000/api/products/shop/${shopName}`)
+    fetch(`${API_URL}/api/auth/me`)
       .then(res => res.json())
       .then(data => setShop(data))
       .catch(err => console.error(err));

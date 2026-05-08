@@ -1,3 +1,4 @@
+import API_URL from "../config/api";
 import { useEffect, useState } from "react";
 
 export default function VendorDashboard({ goUpgrade }) {
@@ -42,7 +43,7 @@ export default function VendorDashboard({ goUpgrade }) {
   const loadData = async () => {
     try {
       const p = await fetch(
-        "http://localhost:3000/api/vendor/profile",
+        `${API_URL}/api/auth/me`,
         {
           headers: {
             Authorization:`Bearer ${token}`
@@ -51,7 +52,7 @@ export default function VendorDashboard({ goUpgrade }) {
       ).then((r) => r.json());
 
       const my = await fetch(
-        "http://localhost:3000/api/products/my-products",
+        `${API_URL}/api/auth/me`,
         {
           headers: {
             Authorization:`Bearer ${token}`
@@ -75,7 +76,7 @@ export default function VendorDashboard({ goUpgrade }) {
   const saveProfile = async () => {
     try {
       const res = await fetch(
-        "http://localhost:3000/api/vendor/profile",
+        `${API_URL}/api/auth/me`,
         {
           method: "PATCH",
           headers,
@@ -100,7 +101,7 @@ export default function VendorDashboard({ goUpgrade }) {
   const createProduct = async () => {
     try {
       const res = await fetch(
-        "http://localhost:3000/api/products",
+        `${API_URL}/api/auth/me`,
         {
           method: "POST",
           headers,
@@ -145,7 +146,7 @@ export default function VendorDashboard({ goUpgrade }) {
 
     try {
       const res = await fetch(
-       `http://localhost:3000/api/products/${id}`,
+       `${API_URL}/api/auth/me`,
         {
           method: "DELETE",
           headers
@@ -205,7 +206,7 @@ const boostProduct = async (
 ) => {
   try {
     const res = await fetch(
-     `http://localhost:3000/api/products/boost/${id}`,
+     `${API_URL}/api/auth/me`,
       {
         method: "PATCH",
         headers,

@@ -1,6 +1,4 @@
-import { PrismaClient } from "@prisma/client";
-
-const prisma = new PrismaClient();
+import prisma from "../lib/prisma.js";
 
 const prices = {
   STARTER: { MONTHLY: 5, YEARLY: 50 },

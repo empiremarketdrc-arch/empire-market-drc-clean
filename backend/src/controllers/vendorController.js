@@ -1,12 +1,13 @@
-import { PrismaClient } from "@prisma/client";
+import prisma from "../lib/prisma.js";
 
-const prisma = new PrismaClient();
-
-async function getVendor(userId) {
-  return await prisma.vendor.findFirst({
+/* =========================
+   HELPER (interne uniquement)
+========================= */
+const findVendorByUserId = async (userId) => {
+  return prisma.vendor.findFirst({
     where: { userId }
   });
-}
+};
 
 /* =========================
    APPLY VENDEUR
@@ -15,9 +16,7 @@ export const applyVendor = async (req, res) => {
   try {
     const userId = req.user.userId;
 
-    const existingVendor = await prisma.vendor.findFirst({
-      where: { userId }
-    });
+    const existingVendor = await findVendorByUserId(userId);
 
     if (existingVendor) {
       return res.status(400).json({
@@ -59,19 +58,21 @@ export const applyVendor = async (req, res) => {
         bankName,
         bankHolder,
         bankAccount,
-        status: "PENDING",
-        badge: "SILVER"
+        status: "PENDING",   // 🔒 contrôlé serveur
+        badge: "SILVER"      // 🔒 contrôlé serveur
       }
     });
 
-    res.status(201).json({
+    return res.status(201).json({
       message: "Demande vendeur envoyée",
       vendor
     });
 
   } catch (error) {
-    res.status(500).json({
-      error: error.message
+    console.error("APPLY VENDOR ERROR:", error);
+
+    return res.status(500).json({
+      message: "Erreur serveur"
     });
   }
 };
@@ -81,7 +82,7 @@ export const applyVendor = async (req, res) => {
 ========================= */
 export const myVendorProfile = async (req, res) => {
   try {
-    const vendor = await getVendor(req.user.userId);
+    const vendor = await findVendorByUserId(req.user.userId);
 
     if (!vendor) {
       return res.status(404).json({
@@ -89,11 +90,13 @@ export const myVendorProfile = async (req, res) => {
       });
     }
 
-    res.json(vendor);
+    return res.status(200).json(vendor);
 
   } catch (error) {
-    res.status(500).json({
-      error: error.message
+    console.error("GET VENDOR PROFILE ERROR:", error);
+
+    return res.status(500).json({
+      message: "Erreur serveur"
     });
   }
 };
@@ -103,7 +106,7 @@ export const myVendorProfile = async (req, res) => {
 ========================= */
 export const updateVendorProfile = async (req, res) => {
   try {
-    const vendor = await getVendor(req.user.userId);
+    const vendor = await findVendorByUserId(req.user.userId);
 
     if (!vendor) {
       return res.status(404).json({
@@ -111,21 +114,44 @@ export const updateVendorProfile = async (req, res) => {
       });
     }
 
+    // 🔒 whitelist des champs autorisés
+    const {
+      shopName,
+      whatsapp,
+      phoneBusiness,
+      description,
+      paymentMethod,
+      paymentNumber,
+      bankName,
+      bankHolder,
+      bankAccount
+    } = req.body;
+
     const updated = await prisma.vendor.update({
-      where: {
-        id: vendor.id
-      },
-      data: req.body
+      where: { id: vendor.id },
+      data: {
+        shopName,
+        whatsapp,
+        phoneBusiness,
+        description,
+        paymentMethod,
+        paymentNumber,
+        bankName,
+        bankHolder,
+        bankAccount
+      }
     });
 
-    res.json({
+    return res.status(200).json({
       message: "Profil mis à jour",
       vendor: updated
     });
 
   } catch (error) {
-    res.status(500).json({
-      error: error.message
+    console.error("UPDATE VENDOR ERROR:", error);
+
+    return res.status(500).json({
+      message: "Erreur serveur"
     });
   }
 };

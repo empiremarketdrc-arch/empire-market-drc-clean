@@ -1,3 +1,4 @@
+import API_URL from "../config/api";
 import { useState, useEffect } from "react";
 import Navbar from "./components/Navbar";
 
@@ -47,7 +48,7 @@ function App() {
       try {
         const res =
           await fetch(
-            "http://localhost:3000/api/auth/me",
+            `${API_URL}/api/auth/me`,
             {
               headers: {
                 Authorization:`Bearer ${savedToken}`

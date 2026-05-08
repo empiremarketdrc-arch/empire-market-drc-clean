@@ -1,12 +1,41 @@
-import { PrismaClient } from "@prisma/client";
+import prisma from "../lib/prisma.js";
 import bcrypt from "bcrypt";
 import jwt from "jsonwebtoken";
 
-const prisma = new PrismaClient();
-
+/* =========================
+   REGISTER
+========================= */
 export const register = async (req, res) => {
   try {
     const { name, phone, email, password } = req.body;
+
+    if (!name || !phone || !email || !password) {
+      return res.status(400).json({
+        message: "Tous les champs sont requis"
+      });
+    }
+
+    if (password.length < 6) {
+      return res.status(400).json({
+        message: "Mot de passe trop court"
+      });
+    }
+
+    // 🔒 Vérification doublon
+    const existingUser = await prisma.user.findFirst({
+      where: {
+        OR: [
+          { email },
+          { phone }
+        ]
+      }
+    });
+
+    if (existingUser) {
+      return res.status(400).json({
+        message: "Email ou téléphone déjà utilisé"
+      });
+    }
 
     const hashedPassword = await bcrypt.hash(password, 10);
 
@@ -19,6 +48,10 @@ export const register = async (req, res) => {
       }
     });
 
+    if (!process.env.JWT_SECRET) {
+      throw new Error("JWT_SECRET manquant");
+    }
+
     const token = jwt.sign(
       {
         userId: user.id,
@@ -28,19 +61,24 @@ export const register = async (req, res) => {
       { expiresIn: "7d" }
     );
 
-    res.status(201).json({
+    return res.status(201).json({
       message: "Inscription réussie",
       token,
       role: user.role
     });
 
   } catch (error) {
-    res.status(500).json({
-      error: error.message
+    console.error("REGISTER ERROR:", error);
+
+    return res.status(500).json({
+      message: "Erreur serveur"
     });
   }
 };
 
+/* =========================
+   LOGIN
+========================= */
 export const login = async (req, res) => {
   try {
     const { identifier, password } = req.body;
@@ -86,27 +124,36 @@ export const login = async (req, res) => {
       { expiresIn: "7d" }
     );
 
-    res.json({
-  message: "Connexion réussie",
-  token,
-  role: user.role
-});
+    return res.status(200).json({
+      message: "Connexion réussie",
+      token,
+      role: user.role
+    });
 
   } catch (error) {
-    res.status(500).json({
-      error: error.message
+    console.error("LOGIN ERROR:", error);
+
+    return res.status(500).json({
+      message: "Erreur serveur"
     });
   }
 };
 
+/* =========================
+   ME
+========================= */
 export const me = async (req, res) => {
   try {
     const user = await prisma.user.findUnique({
       where: { id: req.user.userId },
-      include: {
-        vendor: true
-      }
+      include: { vendor: true }
     });
+
+    if (!user) {
+      return res.status(404).json({
+        message: "Utilisateur introuvable"
+      });
+    }
 
     let dashboardType = "CLIENT";
 
@@ -116,7 +163,7 @@ export const me = async (req, res) => {
       dashboardType = "VENDOR";
     }
 
-    res.json({
+    return res.status(200).json({
       dashboardType,
       user: {
         id: user.id,
@@ -128,8 +175,10 @@ export const me = async (req, res) => {
     });
 
   } catch (error) {
-    res.status(500).json({
-      error: error.message
+    console.error("ME ERROR:", error);
+
+    return res.status(500).json({
+      message: "Erreur serveur"
     });
   }
-};
+}

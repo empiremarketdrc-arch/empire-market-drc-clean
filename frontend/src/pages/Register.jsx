@@ -1,3 +1,4 @@
+import API_URL from "../config/api";
 import { useState } from "react";
 
 export default function Register({ onLogin }) {
@@ -9,7 +10,7 @@ export default function Register({ onLogin }) {
   const handleRegister = async () => {
     try {
       const res = await fetch(
-        "http://localhost:3000/api/auth/register",
+        `${API_URL}/api/auth/me`,
         {
           method: "POST",
           headers: {

@@ -1,3 +1,4 @@
+import API_URL from "../config/api";
 import { useEffect, useState } from "react";
 
 export default function HomePage() {
@@ -18,7 +19,7 @@ export default function HomePage() {
   const loadProducts = async () => {
     try {
       const res = await fetch(
-        "http://localhost:3000/api/products/public"
+        `${API_URL}/api/auth/me`
       );
 
       const data = await res.json();

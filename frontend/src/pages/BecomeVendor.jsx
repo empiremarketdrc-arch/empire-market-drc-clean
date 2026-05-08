@@ -1,3 +1,4 @@
+import API_URL from "../config/api";
 import { useState } from "react";
 
 export default function BecomeVendor() {
@@ -37,7 +38,7 @@ export default function BecomeVendor() {
       setLoading(true);
 
       const res = await fetch(
-        "http://localhost:3000/api/vendor/apply",
+        `${API_URL}/api/auth/me`,
         {
           method: "POST",
           headers: {
