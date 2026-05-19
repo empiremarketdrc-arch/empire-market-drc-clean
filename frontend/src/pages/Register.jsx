@@ -10,7 +10,7 @@ export default function Register({ onLogin }) {
   const handleRegister = async () => {
     try {
       const res = await fetch(
-        `${API_URL}/api/auth/me`,
+        `${API_URL}/api/auth/register`,
         {
           method: "POST",
           headers: {
