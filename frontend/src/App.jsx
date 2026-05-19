@@ -1,4 +1,4 @@
-import API_URL from "../config/api";
+import API_URL from "./services/api";
 import { useState, useEffect } from "react";
 import Navbar from "./components/Navbar";
 
