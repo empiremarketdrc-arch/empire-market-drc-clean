@@ -1,4 +1,4 @@
-import API_URL from "./services/api";
+import API_URL from "../services/api";
 import { useEffect, useState } from "react";
 
 export default function ShopPublic({ shopName }) {
