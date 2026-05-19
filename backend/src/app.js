@@ -48,6 +48,8 @@ const limiter = rateLimit({
   message: "Trop de requêtes, réessaie plus tard."
 });
 
+app.set("trust proxy", 1)
+
 app.use(limiter);
 
 /* ======================
